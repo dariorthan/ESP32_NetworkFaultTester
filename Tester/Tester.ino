@@ -26,9 +26,14 @@ void setup(void) {
 void loop(void) {
 
   delay(5000);
-  IPAddress ip (192, 178, 168, 163); // The remote ip to ping 
+  IPAddress ip (10, 10, 1, 8); // The remote ip to ping 
   int ret = Ping.ping(ip);
   Serial.print(ret);
+  if (ret == 1) {
+    Serial.print("Target Active");
+  } else {
+    Serial.print("Target inctive");
+  };
   
 
 }
