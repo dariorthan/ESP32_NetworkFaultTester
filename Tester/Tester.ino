@@ -30,10 +30,10 @@ void loop(void) {
   int ret = Ping.ping(ip);
   Serial.print(ret);
   if (ret == 1) {
-    Serial.print("Target Active")
+    Serial.print("Target Active");
   } else {
-    Serial.print("Target inctive")
-  }
+    Serial.print("Target inctive");
+  };
   
 
 }
