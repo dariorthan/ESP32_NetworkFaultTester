@@ -131,8 +131,6 @@ void loop() {
   delay(100);
   digitalWrite(BLED, LOW);
   ret = Ping.ping(ip1);
-  Serial.println();
-  Serial.print(ret);
   if (ret == 1) {
     if(DebugMode == true) {
     Serial.println();
@@ -262,6 +260,7 @@ void EditMode () {
   AllLEDsLow();
   lcd.clear();
   lcd.noDisplay();
+  lcd.noBacklight();
 }
 
 int GetIPToEdit () {
