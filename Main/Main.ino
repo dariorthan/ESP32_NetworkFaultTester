@@ -4,13 +4,15 @@
 #include <WiFi.h>
 #include <ESPping.h>
 
+
+//variables for Wifi SSID and Password
 #define WifiPassword "Prinzenrolle"
 #define WifiSSID "KP-Wlan"
 #define WifiChannel 6
 
-bool DebugMode = true;
-
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
+
+//Variables
 const byte ROWS = 5;  //four rows
 const byte COLS = 4;  //four columns
 int IPSectionBuffer = 0;
@@ -18,13 +20,19 @@ int IPSection1 = 0;
 int IPSection2 = 0;
 int IPSection3 = 0;
 int IPSection4 = 0;
-int SubSection1 = 0;
-int SubSection2 = 0;
-int SubSection3 = 0;
+int SubSection = 0;
 int IPToEdit = 0;
 int ret = 0;
 int ExitCondition = 0;
+bool DebugMode = true;
 
+IPAddress ip1 (10, 10, 1, 8);
+IPAddress ip2 (10, 10, 0, 1);
+IPAddress ip3 (10, 10, 0, 254);
+IPAddress ip4 (1, 1, 1, 1);
+IPAddress ip (IPSection1, IPSection2, IPSection3, IPSection4); // The remote ip to ping 
+
+//Functions
 IPAddress RecalcIP ();
 int IntConvert (char StringConvert);
 void AllLEDsHigh();
@@ -33,12 +41,7 @@ int GetIPToEdit();
 void EditIPSection(int SectionNr);
 int EditSubsection(int SubsectionNr,int IPSectionBuffer,int SectionNr);
 void PrintIPSection (int SectionNr,int IPSectionBuffer);
-
-IPAddress ip1 (10, 10, 1, 8);
-IPAddress ip2 (10, 10, 0, 1);
-IPAddress ip3 (10, 10, 0, 254);
-IPAddress ip4 (1, 1, 1, 1);
-IPAddress ip (IPSection1, IPSection2, IPSection3, IPSection4); // The remote ip to ping 
+void ToggleDebugMode ();
 
 char keys[ROWS][COLS] = {
   { '1', '2', '3',},
@@ -53,35 +56,41 @@ byte colPins[COLS] = { 13, 12, 14};  //connect to the column pinouts of the keyp
 //Create an object of keypad
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 int key = keypad.getKey();
+
 void setup()
 {
   
 
   //LED Pins
-  pinMode(17, OUTPUT); //Red LED 1
   #define RLED1 17
-  pinMode(16, OUTPUT); //Red LED 2
+  pinMode(RLED1, OUTPUT); //Red LED 1
   #define RLED2 16
-  pinMode(4, OUTPUT); //Red LED 3
+  pinMode(RLED2, OUTPUT); //Red LED 2
   #define RLED3 4
-  pinMode(15, OUTPUT); //Red LED 4
+  pinMode(RLED3, OUTPUT); //Red LED 3
   #define RLED4 15
-  pinMode(23, OUTPUT); //Green LED 1
+  pinMode(RLED4, OUTPUT); //Red LED 4
   #define GLED1 23
-  pinMode(19, OUTPUT); //Green LED 2
+  pinMode(GLED1, OUTPUT); //Green LED 1
   #define GLED2 19
-  pinMode(18, OUTPUT); //Green LED 3
+  pinMode(GLED2, OUTPUT); //Green LED 2
   #define GLED3 18
-  pinMode(5, OUTPUT); //Green LED 4
+  pinMode(GLED3, OUTPUT); //Green LED 3
   #define GLED4 5
+  pinMode(GLED4, OUTPUT); //Green LED 4
   #define BLED 0
   pinMode(BLED, OUTPUT);
+
   //Button Pins
   #define InterruptOutput 32
   pinMode(InterruptOutput, OUTPUT);
   digitalWrite(InterruptOutput, HIGH);
   #define InterruptPin 35
   pinMode(InterruptPin, INPUT); //Button 
+  #define DebugToggle 39
+  pinMode(DebugToggle, INPUT);
+
+
   Serial.begin(9600);
   // initialize the lcd 
   lcd.init();                      
@@ -122,7 +131,9 @@ void setup()
 }
 
 void loop() {
-  
+  if(digitalRead(DebugToggle) == HIGH) {
+  void ToggleDebugMode ();
+  }
   if(digitalRead(InterruptPin) == HIGH) {
     EditMode();
   }
@@ -134,14 +145,18 @@ void loop() {
   if (ret == 1) {
     if(DebugMode == true) {
     Serial.println();
-    Serial.print("Target 1 Active");
+    Serial.print("Target 1:");
+    Serial.print(ip1);
+    Serial.print(" active");
     }
     digitalWrite(RLED1, LOW);
     digitalWrite(GLED1, HIGH);
   } else {
     if(DebugMode == true) {
     Serial.println();
-    Serial.print("Target 1 inctive");
+    Serial.print("Target 1:");
+    Serial.print(ip1);
+    Serial.print(" inactive");
     }
     digitalWrite(RLED1, HIGH);
     digitalWrite(GLED1, LOW);
@@ -158,14 +173,18 @@ void loop() {
   if (ret == 1) {
     if(DebugMode == true) {
     Serial.println();
-    Serial.print("Target 2 Active");
+    Serial.print("Target 2:");
+    Serial.print(ip2);
+    Serial.print(" active");
     }
     digitalWrite(RLED2, LOW);
     digitalWrite(GLED2, HIGH);
   } else {
     if(DebugMode == true) {
     Serial.println();
-    Serial.print("Target 2 inctive");
+    Serial.print("Target 2:");
+    Serial.print(ip2);
+    Serial.print(" inactive");
     }
     digitalWrite(RLED2, HIGH);
     digitalWrite(GLED2, LOW);
@@ -181,14 +200,18 @@ void loop() {
   if (ret == 1) {
     if(DebugMode == true) {
     Serial.println();
-    Serial.print("Target 3 Active");
+    Serial.print("Target 3:");
+    Serial.print(ip3);
+    Serial.print(" active");
     }
     digitalWrite(RLED3, LOW);
     digitalWrite(GLED3, HIGH);
   } else {
     if(DebugMode == true) {
     Serial.println();
-    Serial.print("Target 3 inctive");
+    Serial.print("Target 3:");
+    Serial.print(ip3);
+    Serial.print(" inactive");
     }
     digitalWrite(RLED3, HIGH);
     digitalWrite(GLED3, LOW);
@@ -204,14 +227,18 @@ void loop() {
   if (ret == 1) {
     if(DebugMode == true) {
     Serial.println();
-    Serial.print("Target 4 Active");
+    Serial.print("Target 4:");
+    Serial.print(ip4);
+    Serial.print(" active");
     }
     digitalWrite(RLED4, LOW);
     digitalWrite(GLED4, HIGH);
   } else {
     if(DebugMode == true) {
     Serial.println();
-    Serial.print("Target 4 inctive");
+    Serial.print("Target 4:");
+    Serial.print(ip4);
+    Serial.print(" inactive");
     }
     digitalWrite(RLED4, HIGH);
     digitalWrite(GLED4, LOW);
@@ -225,12 +252,6 @@ void EditMode () {
   digitalWrite(BLED, HIGH);
   lcd.backlight();
   lcd.display();
-  /*lcd.setCursor(10,0);
-  lcd.print("T");
-  lcd.setCursor(0,0);
-  lcd.print("Input IP:");
-  lcd.setCursor(0,1);
-  lcd.print("123456790123456790");*/
   IPToEdit = GetIPToEdit();
   lcd.setCursor(0,0);
   lcd.print("Input IP: ");
@@ -253,7 +274,6 @@ void EditMode () {
       Serial.println("Invalid Input, EditMode");
     }
   }
-  RecalcIP();
   ExitCondition = 0;
   delay(1000);
   digitalWrite(BLED, LOW);
@@ -358,51 +378,51 @@ ExitCondition = 0;
     if (key) {
       if (SubsectionNr == 1) {
           if ((IntConvert (key) == 1) || (IntConvert (key) == 2) || (IntConvert (key) == 0)) {
-            SubSection1 = IntConvert (key) * 100;
+            SubSection = IntConvert (key) * 100;
           if (DebugMode == true) {
             Serial.println();
             Serial.print("Key Pressed : ");
             Serial.println(key);
             Serial.println();
-            Serial.print("Lvl1 Passed");
+            Serial.print("EditSubsection, Lvl1 Passed");
           }
           ExitCondition = 1;
-          return SubSection1;
+          return SubSection;
           } else {
             if (DebugMode == true) {
               Serial.println();
               Serial.print("Invalid entry Lvl1");
               Serial.println();
               //comment out later
-              Serial.print("Key Pressed : ");
+              Serial.print("EditSubsection, Key Pressed : ");
               Serial.println(key);
             }
           }
       } else if (SubsectionNr == 2) {
         if ((IPSectionBuffer == 200 && IntConvert (key) <= 5)||(IPSectionBuffer != 200 && IntConvert (key) != 666)) {
-          SubSection2 = IntConvert (key) * 10;
+          SubSection = IntConvert (key) * 10;
         if (DebugMode == true) {
           Serial.println();
           Serial.print("Key Pressed : ");
           Serial.println(key);
           Serial.println();
-          Serial.print("Lvl2 Passed");
+          Serial.print("EditSubsection, Lvl2 Passed");
         }
         ExitCondition = 1;
-        return SubSection2;
+        return SubSection;
         } else {
           if (DebugMode == true) {
             Serial.println();
             Serial.print("Invalid entry Lvl2");
             //comment out later
             Serial.println();
-            Serial.print("Key Pressed : ");
+            Serial.print("EditSubsection, Key Pressed : ");
             Serial.println(key);
           }
         }
       } else if (SubsectionNr == 3) {
         if ((IPSectionBuffer == 250 && IntConvert (key) <= 5)||(IPSectionBuffer != 250 && IntConvert (key) != 666)) {
-          SubSection3 = IntConvert (key) * 1;
+          SubSection = IntConvert (key) * 1;
           if (DebugMode == true) {
             Serial.println();
             Serial.print("Key Pressed : ");
@@ -411,7 +431,7 @@ ExitCondition = 0;
             Serial.print("Lvl3 Passed");
           }
           ExitCondition = 1;
-          return SubSection3;
+          return SubSection;
         } else {
           if (DebugMode == true) {
             Serial.println();
@@ -431,8 +451,10 @@ ExitCondition = 0;
   }
 }
 
+//recalculate and store the IP as doing so multiple times in a function isnt possible
+//note: might not be necessary with current code iteration
 IPAddress RecalcIP () {
-    IPAddress ip (IPSection1, IPSection2, IPSection3, IPSection4); // The remote ip to ping 
+    IPAddress ip (IPSection1, IPSection2, IPSection3, IPSection4); 
     Serial.print(ip);
     return ip;
 }
@@ -479,6 +501,8 @@ void AllLEDsLow () {
   digitalWrite(GLED4, LOW);
 }
 
+
+//Converts the Keypad Output from string to integer
 int IntConvert (char StringConvert) {
 
 if (StringConvert == '9') {
@@ -548,4 +572,13 @@ if (StringConvert == '9') {
   }
   return 0;
 }
+}
+
+void ToggleDebugMode () {
+  while (digitalRead(DebugToggle) == HIGH) {
+    digitalWrite(BLED, HIGH);
+    Serial.println("Debug Mode Toggled");
+  }
+  digitalWrite(BLED, LOW);
+  DebugMode = !DebugMode;
 }
