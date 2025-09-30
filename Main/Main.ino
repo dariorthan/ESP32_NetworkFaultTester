@@ -340,7 +340,7 @@ int GetIPToEdit () {
     }
   }
 }
-
+//Recalculates one Octet of an IP and passes it onto the proper variable
 void EditIPSection (int SectionNr) {
   ExitCondition = 0;
   IPSectionBuffer = 0;
